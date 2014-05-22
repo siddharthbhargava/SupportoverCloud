@@ -20,7 +20,9 @@ function insertKnowledgeDBMessage(json){
 				  //db.open();
 				  db.collection("knowledgeDB", function (err, connection){
 					  
-					  connection.insert({"clientId":json.clientId,"question":json.question,"answer":json.answer,"questionCategory":json.questionCategory,"keywords":[json.keywords]}, function(err,res){
+					  var keyArray  = (json.keywords).split(' ');
+					  
+					  connection.insert({"clientId":json.clientId,"question":json.question,"answer":json.answer,"questionCategory":json.questionCategory,"keywords": keyArray}, function(err,res){
 						  if(!err){
 							  db.close();
 							  console.log('Insert Operation Successful.');	
@@ -236,7 +238,7 @@ function findKnowledgeDBByCategoryAndKey(callback,json){
 	 * The above JSON object must contain the clientID in the form: {"clientID":value,"questionCategory":value,"keywords":[value]}
 	 */
 	
-	if(json.clientId && json.questionCategory && json.keywords){
+	if(json.clientId && json.questionCategory && json.question){
 		MongoClient.connect('mongodb://127.0.0.1:27017/chatDB', function(err, db) {
 			if(err){
 			  throw err;
@@ -245,9 +247,12 @@ function findKnowledgeDBByCategoryAndKey(callback,json){
 			{
 				db.collection("knowledgeDB", function (err, connection){
 					var queryResults;
-					console.log((json.keywords).length);
-					for(var i = 0; i < (json.keywords).length; i++){
-					connection.find({"clientId":json.clientId,"questionCategory":json.questionCategory, "keywords":json.keywords},function(err,res){
+					
+					var keyArray  = (json.question).split(' ');
+					
+					//console.log((json.keywords).length);
+					//for(var i = 0; i < (json.keywords).length; i++){
+					connection.find({"clientId":json.clientId,"questionCategory":json.questionCategory, "keywords": {$in : keyArray}},function(err,res){
 						if(err){
 							console.log("Incorrect Client Id");
 						}
@@ -262,20 +267,22 @@ function findKnowledgeDBByCategoryAndKey(callback,json){
 									cat = cat.concat(docs[0].answer);
 									for(var i=1; i<docs.length;i++)
 									{
-										cat = cat.concat(",");
+										cat = cat.concat("~");
 										cat = cat.concat(docs[i].question);
 										cat = cat.concat(":");
-										cat = cat.concat(docs[i].category);
+										cat = cat.concat(docs[i].answer);
 									}
-									console.log(cat);
-									
+									queryResults = queryResults + (cat);
+									callback(err,cat);
 								}
-								queryResults = queryResults + (cat);
+								else{
+									queryResults="No results in the knowledge base.";
+									callback(err,queryResults);
+								}
+									
 							});
 						}
 					});
-				}
-				callback(err,queryResults);	
 			});
 		}
 	});
@@ -305,3 +312,23 @@ findKnowledgeDBByClient(function(err,result){
 	}},"Honda");
 
 //insertKnowledgeDBMessage({"clientId":"Honda","keywords":["type1","type2"],"question":"What?","answer":"Like This","questionCategory":"faq"});
+//var json = [];
+//json.clientId = "SJSU";
+//json.questionCategory = "CMPE";
+//json.question = "EST Sp.";
+//json.keywords = "203 202";
+//json.answer = "Take Paul.";
+//insertKnowledgeDBMessage(json);
+var json = [];
+json.clientId = "SJSU";
+json.questionCategory = "CMPE";
+json.question = "How is the course 275 202 281 ?";
+
+
+//findKnowledgeDBByCategoryAndKey(function(err,res){
+//	if(!err){
+//		console.log("This is the result of the query!");
+//		console.log(res);
+//	}
+//},json);
+

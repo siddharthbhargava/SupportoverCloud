@@ -142,7 +142,7 @@ function processKbResponse()
 			results = req.responseText;
 			if (results != null) 
 			{
-				var results_array = results.split(",");
+				var results_array = results.split("^");
 				var value = trim(results);
 				if ((value != "") && (value.length != 0)) 
 				{
@@ -152,18 +152,30 @@ function processKbResponse()
 					}
 					else
 					{
-						alert("No results returned from Knowledge Base.  Click on Start Chat if you still wish to talk to Support");
-					} 
-				}
+						var kbResponse="";
+						var responses=results_array[1].split("~");
+						kbResponse= kbResponse + "We found some information matching your query!! \n\n\n";
+						for(var i=0;i<responses.length;i++)
+						{
+								
+								var qna=responses[i].split(":");
+								var q="FAQ :" +qna[0] + "\n\n";
+								var a="Answer :" +qna[1] + "\n";
+								kbResponse=kbResponse+q+a;
+						}
+						kbResponse = kbResponse + "\n\nClick on Start Chat if you still wish to talk to Support!!";
+						alert(kbResponse);
+					}
+				} 
 			}
-		} 
-		else 
-		{	
-       		alert("Problems communicating with Cloud server");
-       		return false;
 		}
+	} 
+	else 
+	{	
+       	alert("Problems communicating with Cloud server");
+       	return false;
 	}
-} 
+}
 function closeWindow()
 {
 	window.close();

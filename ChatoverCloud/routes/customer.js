@@ -179,19 +179,30 @@ exports.knowledgeBase = function(req, res){
 
 		var json=[];
 		json.clientId=req.body.clientId;
-
-		json.category=req.body.category;
-
+		json.question=req.body.message;
+		json.questionCategory=req.body.category;
+		
 		var list=req.body.message.split(" ");
 		json.keywords=list;
 		console.log("clientId : " + req.body.clientId);
 		console.log("category : " + req.body.category);
 		console.log("message : " + req.body.message);
-
-		res.statusCode=200;
 		
-		res.send("0, Query matched Information from Knowledge Base.");
-
+		knowledge.findKnowledgeDBByCategoryAndKey(function(err,result){
+			if(!err){ 
+				console.log("This is the result of the query!");
+				console.log(result);
+				res.statusCode=200;
+				var kbres= "0^"+ result;
+				console.log(kbres);
+				res.send(kbres);
+			}
+			else
+				{
+					console.log("Error in KB consultation");
+				}
+		},json);
+		
 	}
 
 //	/*ajax request to search in knowledge base*/
